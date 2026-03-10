@@ -5,60 +5,85 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Passwort Schutz</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        margin: 0;
-        /* Animierter Hintergrund */
-        background: linear-gradient(-45deg, #6a11cb, #2575fc, #11998e, #38ef7d);
-        background-size: 400% 400%;
-        animation: gradientBG 15s ease infinite;
-        color: white;
-    }
-    @keyframes gradientBG {
-        0% {background-position: 0% 50%;}
-        50% {background-position: 100% 50%;}
-        100% {background-position: 0% 50%;}
-    }
-    .container {
-        background: rgba(0,0,0,0.6);
-        padding: 30px 50px;
-        border-radius: 15px;
-        text-align: center;
-        box-shadow: 0 0 20px rgba(0,0,0,0.4);
-        max-width: 400px;
-    }
-    input[type="password"] {
-        padding: 10px;
-        width: 200px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-        border: none;
-    }
-    button {
-        padding: 10px 20px;
-        border-radius: 5px;
-        border: none;
-        background-color: #4CAF50;
-        color: white;
-        cursor: pointer;
-    }
-    button:hover {
-        background-color: #45a049;
-    }
-    .message {
-        margin-top: 15px;
-        font-weight: bold;
-    }
-    .countdown {
-        margin-top: 10px;
-        color: yellow;
-        font-weight: bold;
-    }
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(-45deg, #6a11cb, #2575fc, #11998e, #38ef7d);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    color: white;
+    overflow: hidden;
+}
+@keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
+.container {
+    background: rgba(0,0,0,0.6);
+    padding: 30px 50px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    max-width: 500px;
+    position: relative;
+    z-index: 1;
+}
+input[type="password"] {
+    padding: 10px;
+    width: 200px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: none;
+}
+button {
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #45a049;
+}
+.message {
+    margin-top: 15px;
+    font-weight: bold;
+}
+.countdown {
+    margin-top: 10px;
+    color: yellow;
+    font-weight: bold;
+}
+/* Große Erfolgsbox */
+.success-box {
+    margin-top: 20px;
+    background-color: rgba(0, 255, 0, 0.85);
+    color: black;
+    padding: 30px 40px;
+    border-radius: 15px;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0,255,0,0.7);
+    display: none; /* unsichtbar bis Erfolg */
+    position: relative;
+    z-index: 2;
+}
+/* Konfetti */
+.confetti {
+    position: absolute;
+    top: -10px;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.9;
+}
 </style>
 </head>
 <body>
@@ -69,7 +94,7 @@
     <button onclick="checkPassword()">Überprüfen</button>
     <div class="message" id="message"></div>
     <div class="countdown" id="countdown"></div>
-    <div class="success" id="success"></div>
+    <div class="success-box" id="successBox">Du hast das richtige Passwort eingegeben!</div>
 </div>
 
 <script>
@@ -83,22 +108,22 @@ function checkPassword() {
     const password = document.getElementById('passwordInput').value;
     const message = document.getElementById('message');
     const countdownElem = document.getElementById('countdown');
-    const successElem = document.getElementById('success');
+    const successBox = document.getElementById('successBox');
 
     if(password === 'Passwort') {
-        // Richtiges Passwort -> Erfolg auf derselben Seite
-        successElem.textContent = 'Du hast das richtige Passwort eingegeben!';
-        successElem.style.color = 'lightgreen';
+        // Erfolg: Box sichtbar + Konfetti
+        successBox.style.display = 'block';
         message.textContent = '';
         countdownElem.textContent = '';
+        launchConfetti();
     } else {
         attempts++;
-        successElem.textContent = '';
+        successBox.style.display = 'none';
         if(attempts >= 10) {
             blocked = true;
             message.textContent = 'Zu viele Versuche. Bitte warten...';
             message.style.color = 'red';
-            let timeLeft = 30; // 30 Sekunden Sperre
+            let timeLeft = 30;
             countdownElem.textContent = `Noch ${timeLeft} Sekunden warten.`;
             
             countdownInterval = setInterval(() => {
@@ -116,6 +141,56 @@ function checkPassword() {
             message.textContent = `Falsches Passwort. Versuch ${attempts}/10.`;
             message.style.color = 'red';
         }
+    }
+}
+
+// Realistisches Konfetti
+function launchConfetti() {
+    const colors = ['#FF595E','#FFCA3A','#8AC926','#1982C4','#6A4C93'];
+    const shapes = ['circle', 'square', 'triangle'];
+
+    for(let i = 0; i < 100; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+
+        // Form
+        const shape = shapes[Math.floor(Math.random()*shapes.length)];
+        if(shape === 'circle') confetti.style.borderRadius = '50%';
+        if(shape === 'triangle') {
+            confetti.style.width = '0';
+            confetti.style.height = '0';
+            confetti.style.borderLeft = '6px solid transparent';
+            confetti.style.borderRight = '6px solid transparent';
+            confetti.style.borderBottom = `12px solid ${confetti.style.backgroundColor}`;
+            confetti.style.backgroundColor = 'transparent';
+        }
+
+        // Größe
+        const size = Math.random() * 8 + 4; // 4-12px
+        if(shape !== 'triangle') {
+            confetti.style.width = size + 'px';
+            confetti.style.height = size + 'px';
+        }
+
+        confetti.style.left = Math.random() * window.innerWidth + 'px';
+        document.body.appendChild(confetti);
+
+        // Bewegung
+        const duration = Math.random() * 3 + 3; // 3-6s
+        const horizontalShift = (Math.random() - 0.5) * 200; // Windbewegung
+
+        confetti.animate([
+            { transform: `translate(0px,0px) rotate(0deg)` },
+            { transform: `translate(${horizontalShift}px, ${window.innerHeight + 50}px) rotate(${Math.random()*720}deg)` }
+        ], {
+            duration: duration * 1000,
+            easing: 'ease-out'
+        });
+
+        setTimeout(() => {
+            confetti.remove();
+        }, duration*1000);
     }
 }
 </script>
